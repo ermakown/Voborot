@@ -1,4 +1,4 @@
-package com.example.voborot.ui.theme
+package com.example.voborot.presentation.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
