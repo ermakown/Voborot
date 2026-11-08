@@ -17,7 +17,8 @@ class CreateAdUseCase @Inject constructor(
         rentalCostPerDay: Int,
         collateral: Int,
         address: String,
-        availableHours: String,
+        availableFromHour: Int,
+        availableToHour: Int,
         isAvailable: Boolean,
         photos: List<String>
     ) {
@@ -31,7 +32,8 @@ class CreateAdUseCase @Inject constructor(
             rentalCostPerDay,
             collateral,
             address,
-            availableHours,
+            availableFromHour,
+            availableToHour,
             isAvailable,
             photos
         )

@@ -15,7 +15,8 @@ interface AdRepository {
         rentalCostPerDay: Int,
         collateral: Int, // залог
         address: String,
-        availableHours: String,
+        availableFromHour: Int,
+        availableToHour: Int,
         isAvailable: Boolean,
         photos: List<String>
     )
