@@ -13,7 +13,8 @@ data class Ad(
     val address: String,
     val publicationDate: Long,
     val lastModifiedDate: Long,
-    val availableHours: String,
+    val availableFromHour: Int,
+    val availableToHour: Int,
     val isAvailable: Boolean,
     val photos: List<String>
 )

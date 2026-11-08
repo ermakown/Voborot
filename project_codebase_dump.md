@@ -21,7 +21,24 @@
         📁 com/
           📁 example/
             📁 voborot/
+              📄 VoborotApp.kt
               📁 data/
+                📁 local/
+                  📄 VoborotDatabase.kt
+                  📁 dbModel/
+                    📄 AdDbModel.kt
+                    📄 AdWithPhotosDbModel.kt
+                    📄 BookingDbModel.kt
+                    📄 CategoryDbModel.kt
+                    📄 CategorySectionDbModel.kt
+                    📄 FavoritesDbModel.kt
+                    📄 FeedbackDbModel.kt
+                    📄 PhotoDbModel.kt
+                    📄 UserDbModel.kt
+                📁 mapper/
+                📁 remote/
+              📁 di/
+                📄 DataModule.kt
               📁 domain/
                 📁 entity/
                   📄 Ad.kt
@@ -295,6 +312,7 @@ class ExampleInstrumentedTest {
     xmlns:tools="http://schemas.android.com/tools">
 
     <application
+        android:name=".VoborotApp"
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
@@ -322,6 +340,372 @@ class ExampleInstrumentedTest {
 
 ---
 
+### File: `app/src/main/java/com/example/voborot/VoborotApp.kt`
+
+````kotlin
+package com.example.voborot
+
+import android.app.Application
+import dagger.hilt.android.HiltAndroidApp
+
+@HiltAndroidApp
+class VoborotApp: Application()
+````
+
+---
+
+### File: `app/src/main/java/com/example/voborot/data/local/VoborotDatabase.kt`
+
+````kotlin
+package com.example.voborot.data.local
+
+import androidx.room.Database
+import androidx.room.RoomDatabase
+import com.example.voborot.data.local.dbModel.AdDbModel
+import com.example.voborot.data.local.dbModel.BookingDbModel
+import com.example.voborot.data.local.dbModel.CategoryDbModel
+import com.example.voborot.data.local.dbModel.CategorySectionDbModel
+import com.example.voborot.data.local.dbModel.FavoritesDbModel
+import com.example.voborot.data.local.dbModel.FeedbackDbModel
+import com.example.voborot.data.local.dbModel.PhotoDbModel
+import com.example.voborot.data.local.dbModel.UserDbModel
+
+@Database(
+    entities = [
+        AdDbModel::class,
+        BookingDbModel::class,
+        CategoryDbModel::class,
+        CategorySectionDbModel::class,
+        FavoritesDbModel::class,
+        FeedbackDbModel::class,
+        PhotoDbModel::class,
+        UserDbModel::class
+    ],
+    version = 1,
+    exportSchema = false
+)
+abstract class VoborotDatabase: RoomDatabase() {
+
+}
+````
+
+---
+
+### File: `app/src/main/java/com/example/voborot/data/local/dbModel/AdDbModel.kt`
+
+````kotlin
+package com.example.voborot.data.local.dbModel
+
+import androidx.room.Entity
+import androidx.room.ForeignKey
+import androidx.room.PrimaryKey
+
+@Entity(
+    tableName = "ads",
+    foreignKeys = [
+        ForeignKey(
+            entity = UserDbModel::class,
+            parentColumns = ["id"],
+            childColumns = ["lessorId"]
+        ),
+        ForeignKey(
+            entity = CategoryDbModel::class,
+            parentColumns = ["id"],
+            childColumns = ["categoryId"]
+        )
+    ]
+)
+data class AdDbModel(
+    @PrimaryKey(autoGenerate = true)
+    val id: Int,
+    val lessorId: Int,
+    val categoryId: Int,
+    val name: String,
+    val description: String,
+    val totalNumber: Int,
+    val rentalCostPerHour: Int,
+    val rentalCostPerDay: Int,
+    val collateral: Int, // залог
+    val address: String,
+    val publicationDate: Long,
+    val lastModifiedDate: Long,
+    val availableFromHour: Int,
+    val availableToHour: Int,
+    val isAvailable: Boolean
+)
+````
+
+---
+
+### File: `app/src/main/java/com/example/voborot/data/local/dbModel/AdWithPhotosDbModel.kt`
+
+````kotlin
+package com.example.voborot.data.local.dbModel
+
+import androidx.room.Embedded
+import androidx.room.Relation
+import com.example.voborot.domain.entity.Ad
+
+data class AdWithPhotosDbModel(
+    @Embedded val ad: Ad,
+    @Relation(
+        parentColumn = "id",
+        entityColumn = "adId"
+    )
+    val photos: List<PhotoDbModel>
+    )
+````
+
+---
+
+### File: `app/src/main/java/com/example/voborot/data/local/dbModel/BookingDbModel.kt`
+
+````kotlin
+package com.example.voborot.data.local.dbModel
+
+import androidx.room.Entity
+import androidx.room.ForeignKey
+import androidx.room.PrimaryKey
+
+@Entity(
+    tableName = "booking",
+    foreignKeys = [
+        ForeignKey(
+            entity = AdDbModel::class,
+            parentColumns = ["id"],
+            childColumns = ["adId"]
+        ),
+        ForeignKey(
+            entity = UserDbModel::class,
+            parentColumns = ["id"],
+            childColumns = ["renterId"]
+        )
+    ]
+)
+data class BookingDbModel(
+    @PrimaryKey(autoGenerate = true)
+    val id: Int,
+    val startDate: Long,
+    val endDate: Long,
+    val bookingDate: Long,
+    val count: Int,
+    val renterId: Int,
+    val decisionStatus: String,
+    val adId: Int
+)
+````
+
+---
+
+### File: `app/src/main/java/com/example/voborot/data/local/dbModel/CategoryDbModel.kt`
+
+````kotlin
+package com.example.voborot.data.local.dbModel
+
+import androidx.room.Entity
+import androidx.room.ForeignKey
+import androidx.room.ForeignKey.Companion.CASCADE
+import androidx.room.PrimaryKey
+
+@Entity(
+    tableName = "category",
+    foreignKeys = [
+        ForeignKey(
+            entity = CategorySectionDbModel::class,
+            parentColumns = ["id"],
+            childColumns = ["categorySectionId"],
+            onDelete = CASCADE
+        )
+    ]
+)
+data class CategoryDbModel(
+    @PrimaryKey(autoGenerate = true)
+    val id: Int,
+    val name: String,
+    val categorySectionId: Int
+)
+````
+
+---
+
+### File: `app/src/main/java/com/example/voborot/data/local/dbModel/CategorySectionDbModel.kt`
+
+````kotlin
+package com.example.voborot.data.local.dbModel
+
+import androidx.room.Entity
+import androidx.room.PrimaryKey
+
+@Entity(
+    tableName = "category section"
+)
+data class CategorySectionDbModel(
+    @PrimaryKey(autoGenerate = true)
+    val id: Int,
+    val name: String
+)
+````
+
+---
+
+### File: `app/src/main/java/com/example/voborot/data/local/dbModel/FavoritesDbModel.kt`
+
+````kotlin
+package com.example.voborot.data.local.dbModel
+
+import androidx.room.Entity
+import androidx.room.ForeignKey
+
+@Entity(
+    tableName = "favorites",
+    primaryKeys = ["userId", "adId"],
+    foreignKeys = [
+        ForeignKey(
+            entity = UserDbModel::class,
+            parentColumns = ["id"],
+            childColumns = ["userId"]
+        ),
+        ForeignKey(
+            entity = AdDbModel::class,
+            parentColumns = ["id"],
+            childColumns = ["adId"]
+        )
+    ]
+)
+data class FavoritesDbModel(
+    val userId: Int,
+    val adId: Int
+)
+````
+
+---
+
+### File: `app/src/main/java/com/example/voborot/data/local/dbModel/FeedbackDbModel.kt`
+
+````kotlin
+package com.example.voborot.data.local.dbModel
+
+import androidx.room.Entity
+import androidx.room.ForeignKey
+import androidx.room.ForeignKey.Companion.CASCADE
+import androidx.room.PrimaryKey
+
+@Entity(
+    tableName = "feedbacks",
+    foreignKeys = [
+        ForeignKey(
+            entity = BookingDbModel::class,
+            parentColumns = ["id"],
+            childColumns = ["bookingId"],
+            onDelete = CASCADE
+        )
+    ]
+)
+data class FeedbackDbModel(
+    @PrimaryKey
+    val bookingId: Int,
+    val mark: Int,
+    val text: String?,
+    val date: Long
+)
+````
+
+---
+
+### File: `app/src/main/java/com/example/voborot/data/local/dbModel/PhotoDbModel.kt`
+
+````kotlin
+package com.example.voborot.data.local.dbModel
+
+import androidx.room.Entity
+import androidx.room.ForeignKey
+import androidx.room.PrimaryKey
+
+@Entity(
+    tableName = "photos",
+    foreignKeys = [
+        ForeignKey(
+            entity = AdDbModel::class,
+            parentColumns = ["id"],
+            childColumns = ["adId"]
+        )
+    ]
+)
+data class PhotoDbModel(
+    @PrimaryKey(autoGenerate = true)
+    val id: Int,
+    val adId: Int,
+    val path: String
+)
+````
+
+---
+
+### File: `app/src/main/java/com/example/voborot/data/local/dbModel/UserDbModel.kt`
+
+````kotlin
+package com.example.voborot.data.local.dbModel
+
+import androidx.room.Entity
+import androidx.room.PrimaryKey
+
+@Entity(
+    tableName = "users"
+)
+data class UserDbModel(
+    @PrimaryKey(autoGenerate = true)
+    val id: Int,
+    val firstName: String,
+    val middleName: String?,
+    val lastName: String,
+    val userImage: String?,
+    val email: String,
+    val registrationDate: Long,
+    val isConfirmed: Boolean
+)
+````
+
+---
+
+### File: `app/src/main/java/com/example/voborot/di/DataModule.kt`
+
+````kotlin
+package com.example.voborot.di
+
+import android.content.Context
+import androidx.room.Room
+import com.example.voborot.data.local.VoborotDatabase
+import dagger.Module
+import dagger.Provides
+import dagger.hilt.InstallIn
+import dagger.hilt.android.qualifiers.ApplicationContext
+import dagger.hilt.components.SingletonComponent
+import javax.inject.Singleton
+
+@Module
+@InstallIn(SingletonComponent::class)
+interface DataModule{
+
+    companion object {
+
+        @Provides
+        @Singleton
+        fun provideVoborotDatabase(
+            @ApplicationContext context: Context
+        ): VoborotDatabase {
+
+            return Room.databaseBuilder(
+                context = context,
+                klass = VoborotDatabase::class.java,
+                name = "voborot.db"
+            ).fallbackToDestructiveMigration(dropAllTables = false).build()
+        }
+    }
+}
+````
+
+---
+
 ### File: `app/src/main/java/com/example/voborot/domain/entity/Ad.kt`
 
 ````kotlin
@@ -340,7 +724,8 @@ data class Ad(
     val address: String,
     val publicationDate: Long,
     val lastModifiedDate: Long,
-    val availableHours: String,
+    val availableFromHour: Int,
+    val availableToHour: Int,
     val isAvailable: Boolean,
     val photos: List<String>
 )
@@ -435,7 +820,8 @@ interface AdRepository {
         rentalCostPerDay: Int,
         collateral: Int, // залог
         address: String,
-        availableHours: String,
+        availableFromHour: Int,
+        availableToHour: Int,
         isAvailable: Boolean,
         photos: List<String>
     )
@@ -541,9 +927,7 @@ interface FeedbackRepository {
     )
 
     suspend fun editFeedback(
-        bookingId: Int,
-        mark: Int,
-        text: String?
+        feedback: Feedback
     )
 
     fun getAllFeedbacks(
@@ -595,7 +979,7 @@ import com.example.voborot.domain.repository.AdRepository
 import javax.inject.Inject
 
 class CreateAdUseCase @Inject constructor(
-    val repository: AdRepository
+    private val repository: AdRepository
 ) {
 
     suspend operator fun invoke(
@@ -608,7 +992,8 @@ class CreateAdUseCase @Inject constructor(
         rentalCostPerDay: Int,
         collateral: Int,
         address: String,
-        availableHours: String,
+        availableFromHour: Int,
+        availableToHour: Int,
         isAvailable: Boolean,
         photos: List<String>
     ) {
@@ -622,7 +1007,8 @@ class CreateAdUseCase @Inject constructor(
             rentalCostPerDay,
             collateral,
             address,
-            availableHours,
+            availableFromHour,
+            availableToHour,
             isAvailable,
             photos
         )
@@ -637,12 +1023,11 @@ class CreateAdUseCase @Inject constructor(
 ````kotlin
 package com.example.voborot.domain.usecase.AdUseCase
 
-import com.example.voborot.domain.entity.Ad
 import com.example.voborot.domain.repository.AdRepository
 import javax.inject.Inject
 
 class DeleteAdUseCase @Inject constructor(
-    val repository: AdRepository
+    private val repository: AdRepository
 ) {
 
     suspend operator fun invoke(
@@ -665,7 +1050,7 @@ import com.example.voborot.domain.repository.AdRepository
 import javax.inject.Inject
 
 class EditAdUseCase @Inject constructor(
-    val repository: AdRepository
+    private val repository: AdRepository
 ) {
 
     suspend operator fun invoke(
@@ -688,7 +1073,7 @@ import com.example.voborot.domain.repository.AdRepository
 import javax.inject.Inject
 
 class GetAdByIdUseCase @Inject constructor(
-    val repository: AdRepository
+    private val repository: AdRepository
 ) {
 
     suspend operator fun invoke(
@@ -712,7 +1097,7 @@ import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 
 class GetFavouriteAdsUseCase @Inject constructor(
-    val repository: AdRepository
+    private val repository: AdRepository
 ) {
 
     operator fun invoke(
@@ -734,11 +1119,9 @@ import com.example.voborot.domain.entity.Ad
 import com.example.voborot.domain.repository.AdRepository
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
-import kotlin.math.max
-import kotlin.math.min
 
 class GetFilteredAdsUseCase @Inject constructor(
-    val repository: AdRepository
+    private val repository: AdRepository
 ) {
 
     operator fun invoke(
@@ -770,7 +1153,7 @@ import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 
 class GetLessorAdsUseCase @Inject constructor(
-    val repository: AdRepository
+    private val repository: AdRepository
 ) {
 
     operator fun invoke(
@@ -788,12 +1171,11 @@ class GetLessorAdsUseCase @Inject constructor(
 ````kotlin
 package com.example.voborot.domain.usecase.AdUseCase
 
-import com.example.voborot.domain.entity.Ad
 import com.example.voborot.domain.repository.AdRepository
 import javax.inject.Inject
 
 class ToggleFavoriteUseCase @Inject constructor(
-    val repository: AdRepository
+    private val repository: AdRepository
 ) {
 
     suspend operator fun invoke(
@@ -812,13 +1194,11 @@ class ToggleFavoriteUseCase @Inject constructor(
 ````kotlin
 package com.example.voborot.domain.usecase.BookingUseCase
 
-import com.example.voborot.domain.entity.Booking
 import com.example.voborot.domain.repository.BookingRepository
-import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 
 class BookingConfirmationUseCase @Inject constructor(
-    val repository: BookingRepository
+    private val repository: BookingRepository
 ) {
 
     suspend operator fun invoke(
@@ -840,7 +1220,7 @@ import com.example.voborot.domain.repository.BookingRepository
 import javax.inject.Inject
 
 class CancelBookingUseCase @Inject constructor(
-    val repository: BookingRepository
+    private val repository: BookingRepository
 ) {
 
     suspend operator fun invoke(
@@ -858,14 +1238,11 @@ class CancelBookingUseCase @Inject constructor(
 ````kotlin
 package com.example.voborot.domain.usecase.BookingUseCase
 
-import com.example.voborot.domain.entity.User
 import com.example.voborot.domain.repository.BookingRepository
-import com.example.voborot.domain.repository.FeedbackRepository
-import com.example.voborot.domain.repository.UserRepository
 import javax.inject.Inject
 
 class CreateBookingUseCase @Inject constructor(
-    val repository: BookingRepository
+    private val repository: BookingRepository
 ) {
 
     suspend operator fun invoke(
@@ -897,7 +1274,7 @@ import com.example.voborot.domain.repository.BookingRepository
 import javax.inject.Inject
 
 class DeleteBookingUseCase @Inject constructor(
-    val repository: BookingRepository
+    private val repository: BookingRepository
 ) {
 
     suspend operator fun invoke(
@@ -919,7 +1296,7 @@ import com.example.voborot.domain.repository.BookingRepository
 import javax.inject.Inject
 
 class EarlyTerminationBookingUseCase @Inject constructor(
-    val repository: BookingRepository
+    private val repository: BookingRepository
 ) {
 
     suspend operator fun invoke(
@@ -939,11 +1316,10 @@ package com.example.voborot.domain.usecase.BookingUseCase
 
 import com.example.voborot.domain.entity.Booking
 import com.example.voborot.domain.repository.BookingRepository
-import com.example.voborot.domain.repository.FeedbackRepository
 import javax.inject.Inject
 
 class GetBookingByIdUseCase @Inject constructor(
-    val repository: BookingRepository
+    private val repository: BookingRepository
 ) {
 
     suspend operator fun invoke(
@@ -967,7 +1343,7 @@ import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 
 class GetUserBookingsUseCase @Inject constructor(
-    val repository: BookingRepository
+    private val repository: BookingRepository
 ) {
 
     operator fun invoke(
@@ -991,7 +1367,7 @@ import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 
 class GetAllCategoriesUseCase @Inject constructor(
-    val repository: CategoryRepository
+    private val repository: CategoryRepository
 ) {
 
     operator fun invoke(): Flow<List<AdCategory>> {
@@ -1011,7 +1387,7 @@ import com.example.voborot.domain.repository.FeedbackRepository
 import javax.inject.Inject
 
 class CreateFeedbackUseCase @Inject constructor(
-    val repository: FeedbackRepository
+    private val repository: FeedbackRepository
 ) {
 
     suspend operator fun invoke(
@@ -1035,7 +1411,7 @@ import com.example.voborot.domain.repository.FeedbackRepository
 import javax.inject.Inject
 
 class DeleteFeedbackUseCase @Inject constructor(
-    val repository: FeedbackRepository
+    private val repository: FeedbackRepository
 ) {
 
     suspend operator fun invoke(
@@ -1053,19 +1429,18 @@ class DeleteFeedbackUseCase @Inject constructor(
 ````kotlin
 package com.example.voborot.domain.usecase.FeedbackUseCase
 
+import com.example.voborot.domain.entity.Feedback
 import com.example.voborot.domain.repository.FeedbackRepository
 import javax.inject.Inject
 
 class EditFeedbackUseCase @Inject constructor(
-    val repository: FeedbackRepository
+    private val repository: FeedbackRepository
 ) {
 
     suspend operator fun invoke(
-        bookingId: Int,
-        mark: Int,
-        text: String?
+        feedback: Feedback
     ) {
-        repository.editFeedback(bookingId, mark, text)
+        repository.editFeedback(feedback)
     }
 }
 ````
@@ -1083,7 +1458,7 @@ import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 
 class GetAllFeedbacksUseCase @Inject constructor(
-    val repository: FeedbackRepository
+    private val repository: FeedbackRepository
 ) {
 
     operator fun invoke(
@@ -1101,12 +1476,11 @@ class GetAllFeedbacksUseCase @Inject constructor(
 ````kotlin
 package com.example.voborot.domain.usecase.UserUseCase
 
-import com.example.voborot.domain.repository.FeedbackRepository
 import com.example.voborot.domain.repository.UserRepository
 import javax.inject.Inject
 
 class CreateUserUseCase @Inject constructor(
-    val repository: UserRepository
+    private val repository: UserRepository
 ) {
 
     suspend operator fun invoke(
@@ -1136,12 +1510,11 @@ class CreateUserUseCase @Inject constructor(
 ````kotlin
 package com.example.voborot.domain.usecase.UserUseCase
 
-import com.example.voborot.domain.repository.FeedbackRepository
 import com.example.voborot.domain.repository.UserRepository
 import javax.inject.Inject
 
 class DeleteUserUseCase @Inject constructor(
-    val repository: UserRepository
+    private val repository: UserRepository
 ) {
 
     suspend operator fun invoke(
@@ -1160,12 +1533,11 @@ class DeleteUserUseCase @Inject constructor(
 package com.example.voborot.domain.usecase.UserUseCase
 
 import com.example.voborot.domain.entity.User
-import com.example.voborot.domain.repository.FeedbackRepository
 import com.example.voborot.domain.repository.UserRepository
 import javax.inject.Inject
 
 class EditUserUseCase @Inject constructor(
-    val repository: UserRepository
+    private val repository: UserRepository
 ) {
 
     suspend operator fun invoke(
@@ -1184,12 +1556,11 @@ class EditUserUseCase @Inject constructor(
 package com.example.voborot.domain.usecase.UserUseCase
 
 import com.example.voborot.domain.entity.User
-import com.example.voborot.domain.repository.FeedbackRepository
 import com.example.voborot.domain.repository.UserRepository
 import javax.inject.Inject
 
 class GetCurrentUserUseCase @Inject constructor(
-    val repository: UserRepository
+    private val repository: UserRepository
 ) {
 
     suspend operator fun invoke(
@@ -1207,12 +1578,11 @@ class GetCurrentUserUseCase @Inject constructor(
 package com.example.voborot.domain.usecase.UserUseCase
 
 import com.example.voborot.domain.entity.User
-import com.example.voborot.domain.repository.FeedbackRepository
 import com.example.voborot.domain.repository.UserRepository
 import javax.inject.Inject
 
 class GetUserUseCase @Inject constructor(
-    val repository: UserRepository
+    private val repository: UserRepository
 ) {
 
     suspend operator fun invoke(
@@ -1231,12 +1601,11 @@ class GetUserUseCase @Inject constructor(
 package com.example.voborot.domain.usecase.UserUseCase
 
 import com.example.voborot.domain.entity.User
-import com.example.voborot.domain.repository.FeedbackRepository
 import com.example.voborot.domain.repository.UserRepository
 import javax.inject.Inject
 
 class SignInUseCase @Inject constructor(
-    val repository: UserRepository
+    private val repository: UserRepository
 ) {
 
     suspend operator fun invoke(
@@ -1259,15 +1628,10 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
 import com.example.voborot.presentation.ui.theme.VoborotTheme
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
