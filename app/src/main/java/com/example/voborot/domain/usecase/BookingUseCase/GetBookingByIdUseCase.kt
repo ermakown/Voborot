@@ -10,7 +10,7 @@ class GetBookingByIdUseCase @Inject constructor(
 
     suspend operator fun invoke(
         bookingId: Int
-    ): Booking {
+    ): Booking? {
         return repository.getBookingById(bookingId)
     }
 }
