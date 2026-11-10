@@ -1,4 +1,4 @@
-package com.example.voborot.data.local.dao.booking
+package com.example.voborot.data.local.dao
 
 import androidx.room.Dao
 import androidx.room.Insert
@@ -14,20 +14,18 @@ interface BookingDao {
     suspend fun insertBooking(booking: BookingDbModel)
 
     @Query("SELECT * FROM booking WHERE id = :bookingId LIMIT 1")
-    suspend fun getBookingById(bookingId: Int): BookingDbModel
+    suspend fun getBookingById(bookingId: Int): BookingDbModel?
 
-    // Обновляем только статус (например, при подтверждении или отмене в первые 10 минут)
     @Query("UPDATE booking SET decisionStatus = :status WHERE id = :bookingId")
     suspend fun updateDecisionStatus(bookingId: Int, status: String)
 
-    // Досрочное завершение: перезаписываем дату окончания на текущий момент
     @Query("UPDATE booking SET endDate = :currentTimeMillis WHERE id = :bookingId")
     suspend fun completeBookingEarly(bookingId: Int, currentTimeMillis: Long)
 
     @Query("DELETE FROM booking WHERE id = :bookingId")
     suspend fun deleteBooking(bookingId: Int)
 
-    // Получаем историю: как те сделки, где юзер берет вещь, так и те, где сдает свою
+    // История: как те сделки, где юзер берет вещь, так и те, где сдает свою
     @Query("""
         SELECT * FROM booking 
         WHERE renterId = :userId 

@@ -2,6 +2,7 @@ package com.example.voborot.data.local.dbModel
 
 import androidx.room.Entity
 import androidx.room.ForeignKey
+import androidx.room.Index
 import androidx.room.PrimaryKey
 
 @Entity(
@@ -17,7 +18,8 @@ import androidx.room.PrimaryKey
             parentColumns = ["id"],
             childColumns = ["renterId"]
         )
-    ]
+    ],
+    indices = [Index("renterId"), Index("adId")]
 )
 data class BookingDbModel(
     @PrimaryKey(autoGenerate = true)

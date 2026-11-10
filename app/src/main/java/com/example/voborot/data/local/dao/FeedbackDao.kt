@@ -1,4 +1,4 @@
-package com.example.voborot.data.local.dao.feedback
+package com.example.voborot.data.local.dao
 
 import androidx.room.Dao
 import androidx.room.Insert
@@ -20,11 +20,11 @@ interface FeedbackDao {
     @Query("DELETE FROM feedbacks WHERE bookingId = :bookingId")
     suspend fun deleteFeedback(bookingId: Int)
 
-    // Джоиним с таблицей бронирований, чтобы вытащить отзывы для конкретного объявления
+    // отзывы для конкретного объявления
     @Query("""
-        SELECT f.* FROM feedbacks f
-        INNER JOIN booking b ON f.bookingId = b.id
-        WHERE b.adId = :adId
+        SELECT feedbacks.* FROM feedbacks
+        INNER JOIN booking ON feedbacks.bookingId = booking.id
+        WHERE booking.adId = :adId
     """)
     fun getFeedbacksForAd(adId: Int): Flow<List<FeedbackDbModel>>
 }
