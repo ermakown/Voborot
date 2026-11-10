@@ -10,7 +10,7 @@ class GetAdByIdUseCase @Inject constructor(
 
     suspend operator fun invoke(
         adId: Int
-    ): Ad {
+    ): Ad? {
         return repository.getAdById(adId)
     }
 }

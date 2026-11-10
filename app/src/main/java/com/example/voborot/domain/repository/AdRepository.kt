@@ -25,7 +25,7 @@ interface AdRepository {
 
     suspend fun deleteAd(adId: Int)
 
-    suspend fun getAdById(adId: Int): Ad
+    suspend fun getAdById(adId: Int): Ad?
 
     fun getFilteredAds(
         query: String?,

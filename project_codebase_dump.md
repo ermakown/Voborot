@@ -35,8 +35,6 @@
                     📄 FeedbackDbModel.kt
                     📄 PhotoDbModel.kt
                     📄 UserDbModel.kt
-                📁 mapper/
-                📁 remote/
               📁 di/
                 📄 DataModule.kt
               📁 domain/
@@ -698,7 +696,7 @@ interface DataModule{
                 context = context,
                 klass = VoborotDatabase::class.java,
                 name = "voborot.db"
-            ).fallbackToDestructiveMigration(dropAllTables = false).build()
+            ).fallbackToDestructiveMigration(dropAllTables = true).build()
         }
     }
 }

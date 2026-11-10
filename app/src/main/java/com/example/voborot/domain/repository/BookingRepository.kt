@@ -16,7 +16,7 @@ interface BookingRepository {
     // отмена бронирования
     suspend fun cancelBooking(bookingId: Int)
 
-    suspend fun getBookingById(bookingId: Int): Booking
+    suspend fun getBookingById(bookingId: Int): Booking?
 
     fun getUserBookings(userId: Int): Flow<List<Booking>>
 
